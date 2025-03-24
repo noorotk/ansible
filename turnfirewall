@@ -1,0 +1,10 @@
+---
+- name: turn on and off firewall 
+  become: true
+  hosts: myhosts
+  tasks:
+    - name : anything
+      service:
+        name: firewalld
+        state: started
+        enabled: true
