@@ -1,0 +1,17 @@
+---
+- name: enable http service to run httpd on the browser
+  become: true
+  hosts: myhosts
+  tasks:
+  
+  - name: enable http in the firewall
+    ansible.posix.firewalld:
+      service: https
+      state: enabled
+      permanent: true
+      immediate: true
+
+  - name: Restart the firewalld service
+    service:
+      name: firewalld
+      state: restarted

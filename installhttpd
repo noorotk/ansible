@@ -1,0 +1,27 @@
+---
+- name: Configure Apache and Firewall
+  hosts: myhosts
+  become: true
+  tasks:
+    - name: Install httpd
+      dnf:
+        name: httpd
+        state: latest
+
+    - name: Enable and start httpd service
+      service:
+        name: httpd
+        enabled: true
+        state: started
+   
+    - name: add http to firewall
+      ansible.posix.firewalld:
+        zone: public
+        service: http
+        permanent: yes
+        state: enabled
+
+    - name: reload firewall
+      service:
+        name: firewalld
+        state: restarted
