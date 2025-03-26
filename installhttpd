@@ -3,6 +3,15 @@
   hosts: myhosts
   become: true
   tasks:
+
+    - name: copy html file for the site
+      copy:
+        src: file/default_site.html
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: 0644
+
     - name: Install httpd
       dnf:
         name: httpd
@@ -25,3 +34,4 @@
       service:
         name: firewalld
         state: restarted
+  
