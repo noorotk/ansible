@@ -1,0 +1,92 @@
+---
+- name: Configure Apache and Firewall
+  hosts: myhosts
+  become: true
+  tasks:
+
+    - name: enable port 5054 on SElinux
+      shell: semanage port -a -t http_port_t -p tcp 5054
+
+    - name: copy html file for the site
+      copy:
+        src: file/default_site.html
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Install httpd
+      dnf:
+        name: httpd
+        state: latest
+
+    - name: Enable and start httpd service
+      service:
+        name: httpd
+        enabled: true
+        state: started
+   
+    - name: add http to firewall
+      firewalld:
+        zone: public
+        service: http
+        permanent: yes
+        state: enabled
+
+    - name: add 5054 port to firewall
+      firewalld:
+        zone: public
+        permanent: true
+        port: 5054/tcp
+        state: enabled
+      register: port_number  
+    - name: reload firewall
+      service:
+        name: firewalld
+        state: restarted
+
+    - name: changing the port to 5054
+      lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen '
+        line: Listen 5054
+
+    - name: Restart httpd
+      service:
+        name: httpd
+        enabled: true
+        state: restarted
+      when: port_number.changed
+
+
+    - name: create simone user
+      tags: always
+      user:
+        name: simone
+        groups: root
+      
+    - name: add ssh key for simone
+      tags: always
+      authorized_key:
+        user: simone
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQjU8S+aQG8SDfVRJI/5bsK+vZnoGLl8DIZJvnVhMj7 ansible"
+
+    - name: add simone to the sudoers file
+      copy:
+        src: sudoer_simone
+        dest: /etc/sudoers.d/simone
+        owner: root
+        group: root
+        mode: 0440
+
+
+
+
+
+
+
+
+
+
+
+
